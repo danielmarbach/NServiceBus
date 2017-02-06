@@ -3,6 +3,7 @@ namespace NServiceBus
     using System;
     using System.Globalization;
     using System.IO;
+    using System.Reflection;
     using System.Xml.Linq;
     using Newtonsoft.Json;
 
@@ -59,7 +60,7 @@ namespace NServiceBus
 
         public override bool CanConvert(Type objectType)
         {
-            return typeof(XContainer).IsAssignableFrom(objectType);
+            return typeof(XContainer).GetTypeInfo().IsAssignableFrom(objectType);
         }
     }
 }

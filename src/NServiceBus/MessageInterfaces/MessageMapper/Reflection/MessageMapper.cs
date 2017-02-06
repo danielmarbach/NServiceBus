@@ -4,23 +4,13 @@ namespace NServiceBus.MessageInterfaces.MessageMapper.Reflection
     using System.Collections;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Reflection;
-    using System.Runtime.Serialization;
 
     /// <summary>
     /// Uses reflection to map between interfaces and their generated concrete implementations.
     /// </summary>
     public class MessageMapper : IMessageMapper
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="MessageMapper" />.
-        /// </summary>
-        public MessageMapper()
-        {
-            concreteProxyCreator = new ConcreteProxyCreator();
-        }
-
         /// <summary>
         /// Scans the given types generating concrete classes for interfaces.
         /// </summary>
@@ -45,9 +35,9 @@ namespace NServiceBus.MessageInterfaces.MessageMapper.Reflection
         {
             Guard.AgainstNull(nameof(t), t);
             RuntimeTypeHandle typeHandle;
-            if (t.IsClass)
+            if (t.GetTypeInfo().IsClass)
             {
-                if (t.IsGenericTypeDefinition)
+                if (t.GetTypeInfo().IsGenericTypeDefinition)
                 {
                     return null;
                 }
@@ -75,10 +65,6 @@ namespace NServiceBus.MessageInterfaces.MessageMapper.Reflection
         {
             Guard.AgainstNullAndEmpty(nameof(typeName), typeName);
             var name = typeName;
-            if (typeName.EndsWith(ConcreteProxyCreator.SUFFIX, StringComparison.Ordinal))
-            {
-                name = typeName.Substring(0, typeName.Length - ConcreteProxyCreator.SUFFIX.Length);
-            }
 
             RuntimeTypeHandle typeHandle;
             if (nameToType.TryGetValue(name, out typeHandle))
@@ -116,7 +102,7 @@ namespace NServiceBus.MessageInterfaces.MessageMapper.Reflection
         public object CreateInstance(Type t)
         {
             var mapped = t;
-            if (t.IsInterface || t.IsAbstract)
+            if (t.GetTypeInfo().IsInterface || t.GetTypeInfo().IsAbstract)
             {
                 mapped = GetMappedTypeFor(t);
                 if (mapped == null)
@@ -132,7 +118,7 @@ namespace NServiceBus.MessageInterfaces.MessageMapper.Reflection
                 return ((ConstructorInfo)MethodBase.GetMethodFromHandle(constructor, mapped.TypeHandle)).Invoke(null);
             }
 
-            return FormatterServices.GetUninitializedObject(mapped);
+            return Activator.CreateInstance(mapped);
         }
 
         /// <summary>
@@ -145,18 +131,18 @@ namespace NServiceBus.MessageInterfaces.MessageMapper.Reflection
                 return;
             }
 
-            if (t.IsSimpleType() || t.IsGenericTypeDefinition)
+            if (t.IsSimpleType() || t.GetTypeInfo().IsGenericTypeDefinition)
             {
                 return;
             }
 
-            if (typeof(IEnumerable).IsAssignableFrom(t))
+            if (typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(t))
             {
                 InitType(t.GetElementType());
 
-                foreach (var interfaceType in t.GetInterfaces())
+                foreach (var interfaceType in t.GetTypeInfo().GetInterfaces())
                 {
-                    foreach (var g in interfaceType.GetGenericArguments())
+                    foreach (var g in interfaceType.GetTypeInfo().GetGenericArguments())
                     {
                         if (g == t)
                         {
@@ -181,62 +167,40 @@ namespace NServiceBus.MessageInterfaces.MessageMapper.Reflection
                     return;
                 }
 
-                if (t.IsInterface)
+                if (t.GetTypeInfo().IsInterface)
                 {
-                    GenerateImplementationFor(t);
+                    throw new InvalidOperationException("Proxies are no longer supported.");
                 }
-                else
+
+                var constructorInfo = t.GetTypeInfo().GetConstructor(Type.EmptyTypes);
+                if (constructorInfo != null)
                 {
-                    var constructorInfo = t.GetConstructor(Type.EmptyTypes);
-                    if (constructorInfo != null)
-                    {
-                        typeToConstructor[t.TypeHandle] = constructorInfo.MethodHandle;
-                    }
+                    throw new InvalidOperationException("Proxies are no longer supported.");
+                    // typeToConstructor[t.TypeHandle] = constructorInfo;
                 }
 
                 nameToType[typeName] = t.TypeHandle;
             }
 
-            if (!t.IsInterface)
+            if (!t.GetTypeInfo().IsInterface)
             {
                 return;
             }
 
-            foreach (var field in t.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy))
+            foreach (var field in t.GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy))
             {
                 InitType(field.FieldType);
             }
 
-            foreach (var prop in t.GetProperties())
+            foreach (var prop in t.GetTypeInfo().GetProperties())
             {
                 InitType(prop.PropertyType);
             }
         }
 
-        void GenerateImplementationFor(Type interfaceType)
-        {
-            if (!interfaceType.IsVisible)
-            {
-                throw new Exception($"Can only generate a concrete implementation for '{interfaceType}' if '{interfaceType}' is public.");
-            }
-
-            if (interfaceType.GetMethods().Any(mi => !(mi.IsSpecialName && (mi.Name.StartsWith("set_") || mi.Name.StartsWith("get_")))))
-            {
-                throw new Exception($"Can only generate a concrete implementation for '{interfaceType.Name}' because the interface contains methods. Ensure interface messages do not contain methods.");
-            }
-            var mapped = concreteProxyCreator.CreateTypeFrom(interfaceType);
-            interfaceToConcreteTypeMapping[interfaceType.TypeHandle] = mapped.TypeHandle;
-            concreteToInterfaceTypeMapping[mapped.TypeHandle] = interfaceType.TypeHandle;
-            var constructorInfo = mapped.GetConstructor(Type.EmptyTypes);
-            if (constructorInfo != null)
-            {
-                typeToConstructor[mapped.TypeHandle] = constructorInfo.MethodHandle;
-            }
-        }
-
         static string GetTypeName(Type t)
         {
-            var args = t.GetGenericArguments();
+            var args = t.GetTypeInfo().GetGenericArguments();
             if (args.Length == 2)
             {
                 if (typeof(KeyValuePair<,>).MakeGenericType(args[0], args[1]) == t)
@@ -250,7 +214,6 @@ namespace NServiceBus.MessageInterfaces.MessageMapper.Reflection
 
         readonly object messageInitializationLock = new object();
 
-        ConcreteProxyCreator concreteProxyCreator;
         ConcurrentDictionary<RuntimeTypeHandle, RuntimeTypeHandle> concreteToInterfaceTypeMapping = new ConcurrentDictionary<RuntimeTypeHandle, RuntimeTypeHandle>();
         ConcurrentDictionary<RuntimeTypeHandle, RuntimeTypeHandle> interfaceToConcreteTypeMapping = new ConcurrentDictionary<RuntimeTypeHandle, RuntimeTypeHandle>();
         ConcurrentDictionary<string, RuntimeTypeHandle> nameToType = new ConcurrentDictionary<string, RuntimeTypeHandle>();

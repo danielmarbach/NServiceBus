@@ -2,10 +2,8 @@ namespace NServiceBus
 {
     using System;
     using System.Threading.Tasks;
-    using Janitor;
     using Persistence;
 
-    [SkipWeaving]
     class InMemorySynchronizedStorageSession : CompletableSynchronizedStorageSession
     {
         public InMemorySynchronizedStorageSession(InMemoryTransaction transaction)

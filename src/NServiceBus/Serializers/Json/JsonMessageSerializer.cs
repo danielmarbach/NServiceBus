@@ -4,6 +4,7 @@ namespace NServiceBus
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using System.Runtime.Serialization.Formatters;
     using System.Text;
     using MessageInterfaces;
@@ -77,7 +78,7 @@ namespace NServiceBus
             var settings = serializerSettings;
 
             var mostConcreteType = messageTypes?.FirstOrDefault();
-            var requiresDynamicDeserialization = mostConcreteType != null && mostConcreteType.IsInterface;
+            var requiresDynamicDeserialization = mostConcreteType != null && mostConcreteType.GetTypeInfo().IsInterface;
 
             if (requiresDynamicDeserialization)
             {
@@ -148,7 +149,7 @@ namespace NServiceBus
                     yield return currentRoot;
                     continue;
                 }
-                if (!type.IsAssignableFrom(currentRoot))
+                if (!type.GetTypeInfo().IsAssignableFrom(currentRoot))
                 {
                     currentRoot = type;
                     yield return currentRoot;

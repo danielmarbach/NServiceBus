@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
 
     /// <summary>
     /// The storage types used for NServiceBus needs.
@@ -41,7 +42,7 @@
 
         internal static List<Type> GetAvailableStorageTypes()
         {
-            return typeof(StorageType).GetNestedTypes().ToList();
+            return typeof(StorageType).GetTypeInfo().GetNestedTypes().ToList();
         }
 
         Storage storage;

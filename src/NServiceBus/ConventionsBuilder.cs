@@ -1,7 +1,6 @@
 namespace NServiceBus
 {
     using System;
-    using System.Reflection;
     using Configuration.AdvanceExtensibility;
     using Settings;
 
@@ -47,27 +46,6 @@ namespace NServiceBus
             Conventions.IsEventTypeAction = definesEventType;
             return this;
         }
-
-        /// <summary>
-        /// Sets the function to be used to evaluate whether a property should be encrypted or not.
-        /// </summary>
-        public ConventionsBuilder DefiningEncryptedPropertiesAs(Func<PropertyInfo, bool> definesEncryptedProperty)
-        {
-            Guard.AgainstNull(nameof(definesEncryptedProperty), definesEncryptedProperty);
-            Conventions.IsEncryptedPropertyAction = definesEncryptedProperty;
-            return this;
-        }
-
-        /// <summary>
-        /// Sets the function to be used to evaluate whether a property should be sent via the DataBus or not.
-        /// </summary>
-        public ConventionsBuilder DefiningDataBusPropertiesAs(Func<PropertyInfo, bool> definesDataBusProperty)
-        {
-            Guard.AgainstNull(nameof(definesDataBusProperty), definesDataBusProperty);
-            Conventions.IsDataBusPropertyAction = definesDataBusProperty;
-            return this;
-        }
-
 
         /// <summary>
         /// The defined <see cref="Conventions"/>.

@@ -3,6 +3,7 @@ namespace NServiceBus.Features
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using ObjectBuilder;
     using Unicast;
 
@@ -68,13 +69,13 @@ namespace NServiceBus.Features
 
         public static bool IsMessageHandler(Type type)
         {
-            if (type.IsAbstract || type.IsGenericTypeDefinition)
+            if (type.GetTypeInfo().IsAbstract || type.GetTypeInfo().IsGenericTypeDefinition)
             {
                 return false;
             }
 
-            return type.GetInterfaces()
-                .Where(@interface => @interface.IsGenericType)
+            return type.GetTypeInfo().GetInterfaces()
+                .Where(@interface => @interface.GetTypeInfo().IsGenericType)
                 .Select(@interface => @interface.GetGenericTypeDefinition())
                 .Any(genericTypeDef => genericTypeDef == IHandleMessagesType);
         }

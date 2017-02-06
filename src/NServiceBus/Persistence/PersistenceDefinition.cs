@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using Settings;
 
     /// <summary>
@@ -75,7 +76,7 @@
 
         internal void ApplyActionForStorage(Type storageType, SettingsHolder settings)
         {
-            if (!storageType.IsSubclassOf(typeof(StorageType)))
+            if (!storageType.GetTypeInfo().IsSubclassOf(typeof(StorageType)))
             {
                 throw new ArgumentException($"Storage type '{storageType.FullName}' is not a sub-class of StorageType", nameof(storageType));
             }

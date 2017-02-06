@@ -8,7 +8,6 @@ namespace NServiceBus
     /// An <see cref="IMessage"/> that is used by <see cref="ScheduleExtensions.ScheduleEvery(IMessageSession,TimeSpan,Func{IPipelineContext, Task})"/> and <see cref="ScheduleExtensions.ScheduleEvery(IMessageSession,TimeSpan, string ,Func{IPipelineContext, Task})"/>.
     /// </summary>
     /// <remarks>Allow implementations of <see cref="IMessageSerializer"/> to serialize and deserialize instances.</remarks>
-    [Serializable]
     public class ScheduledTask : IMessage
     {
 

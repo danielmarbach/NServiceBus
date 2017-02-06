@@ -2,6 +2,7 @@ namespace NServiceBus
 {
     using System;
     using System.Linq;
+    using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
     using Logging;
@@ -47,9 +48,9 @@ namespace NServiceBus
             Guard.AgainstNull(nameof(task), task);
             Guard.AgainstNegativeAndZero(nameof(timeSpan), timeSpan);
 
-            var declaringType = task.Method.DeclaringType;
+            var declaringType = task.GetMethodInfo().DeclaringType;
             while (declaringType.DeclaringType != null &&
-                   declaringType.CustomAttributes.Any(a => a.AttributeType.Name == "CompilerGeneratedAttribute"))
+                   declaringType.GetTypeInfo().CustomAttributes.Any(a => a.AttributeType.Name == "CompilerGeneratedAttribute"))
             {
                 declaringType = declaringType.DeclaringType;
             }

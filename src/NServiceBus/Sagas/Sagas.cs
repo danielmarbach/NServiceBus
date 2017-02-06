@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using NServiceBus.Sagas;
     using ObjectBuilder;
     using Persistence;
@@ -89,7 +90,7 @@
 
         static bool IsCompatible(Type t, Type source)
         {
-            return source.IsAssignableFrom(t) && t != source && !t.IsAbstract && !t.IsInterface && !t.IsGenericType;
+            return source.GetTypeInfo().IsAssignableFrom(t) && t != source && !t.GetTypeInfo().IsAbstract && !t.GetTypeInfo().IsInterface && !t.GetTypeInfo().IsGenericType;
         }
 
         static bool IsTypeATimeoutHandledByAnySaga(Type type, IEnumerable<Type> sagas)
@@ -97,7 +98,7 @@
             var timeoutHandler = typeof(IHandleTimeouts<>).MakeGenericType(type);
             var messageHandler = typeof(IHandleMessages<>).MakeGenericType(type);
 
-            return sagas.Any(t => timeoutHandler.IsAssignableFrom(t) && !messageHandler.IsAssignableFrom(t));
+            return sagas.Any(t => timeoutHandler.GetTypeInfo().IsAssignableFrom(t) && !messageHandler.GetTypeInfo().IsAssignableFrom(t));
         }
 
         Conventions conventions;

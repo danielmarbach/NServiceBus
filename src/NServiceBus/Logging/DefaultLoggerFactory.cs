@@ -1,7 +1,6 @@
 namespace NServiceBus
 {
     using System;
-    using System.Diagnostics;
     using Logging;
 
     class DefaultLoggerFactory : ILoggerFactory
@@ -47,7 +46,6 @@ namespace NServiceBus
             {
                 rollingLogger.Write(fullMessage);
                 ColoredConsoleLogger.Write(fullMessage, messageLevel);
-                Trace.WriteLine(fullMessage);
             }
         }
 

@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using System.Threading.Tasks;
     using Logging;
     using Routing.MessageDrivenSubscriptions;
@@ -52,7 +53,7 @@
                 .Where(t => !conventions.IsInSystemConventionList(t)) //never auto-subscribe system messages
                 .Where(t => !conventions.IsCommandType(t)) //commands should never be subscribed to
                 .Where(conventions.IsEventType) //only events unless the user asked for all messages
-                .Where(t => settings.AutoSubscribeSagas || handlerRegistry.GetHandlersFor(t).Any(handler => !typeof(Saga).IsAssignableFrom(handler.HandlerType))) //get messages with other handlers than sagas if needed
+                .Where(t => settings.AutoSubscribeSagas || handlerRegistry.GetHandlersFor(t).Any(handler => !typeof(Saga).GetTypeInfo().IsAssignableFrom(handler.HandlerType))) //get messages with other handlers than sagas if needed
                 .ToList();
 
             return messageTypesHandled;

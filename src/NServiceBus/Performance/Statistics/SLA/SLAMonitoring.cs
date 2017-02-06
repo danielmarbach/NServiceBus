@@ -2,7 +2,6 @@ namespace NServiceBus.Features
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -61,9 +60,7 @@ namespace NServiceBus.Features
             public EstimatedTimeToSLABreachCounter(TimeSpan endpointSla, string counterInstanceName)
             {
                 this.endpointSla = endpointSla;
-                this.counterInstanceName = counterInstanceName;
             }
-
 
             public void Update(DateTime sent, DateTime processingStarted, DateTime processingEnded)
             {
@@ -83,7 +80,6 @@ namespace NServiceBus.Features
 
             protected override Task OnStart(IMessageSession session)
             {
-                counter = PerformanceCounterHelper.InstantiatePerformanceCounter("SLA violation countdown", counterInstanceName);
                 timer = new Timer(RemoveOldDataPoints, null, 0, 2000);
 
                 return TaskEx.CompletedTask;
@@ -92,7 +88,6 @@ namespace NServiceBus.Features
             protected override Task OnStop(IMessageSession session)
             {
                 timer.Dispose();
-                counter.Dispose();
 
                 return TaskEx.CompletedTask;
             }
@@ -106,9 +101,7 @@ namespace NServiceBus.Features
                     snapshots = new List<DataPoint>(dataPoints);
                 }
 
-                var secondsToSLABreach = CalculateTimeToSLABreach(snapshots);
-
-                counter.RawValue = Convert.ToInt32(Math.Min(secondsToSLABreach, int.MaxValue));
+                CalculateTimeToSLABreach(snapshots);
             }
 
             double CalculateTimeToSLABreach(List<DataPoint> snapshots)
@@ -175,10 +168,8 @@ namespace NServiceBus.Features
                 UpdateTimeToSLABreach();
             }
 
-            PerformanceCounter counter;
             List<DataPoint> dataPoints = new List<DataPoint>();
             TimeSpan endpointSla;
-            string counterInstanceName;
             // ReSharper disable once NotAccessedField.Local
             Timer timer;
 

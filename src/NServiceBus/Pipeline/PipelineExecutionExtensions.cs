@@ -39,13 +39,13 @@
                     throw new InvalidOperationException("Behaviors must implement IBehavior<TInContext, TOutContext>");
                 }
                 // Select the method on the type which was implemented from the behavior interface.
-                var methodInfo = currentBehavior.GetType().GetInterfaceMap(behaviorInterfaceType).TargetMethods.FirstOrDefault();
+                var methodInfo = currentBehavior.GetType().GetTypeInfo().GetRuntimeInterfaceMap(behaviorInterfaceType).TargetMethods.FirstOrDefault();
                 if (methodInfo == null)
                 {
                     throw new InvalidOperationException("Behaviors must implement IBehavior<TInContext, TOutContext> and provide an invocation method.");
                 }
 
-                var genericArguments = behaviorInterfaceType.GetGenericArguments();
+                var genericArguments = behaviorInterfaceType.GetTypeInfo().GetGenericArguments();
                 var inContextType = genericArguments[0];
 
                 var inContextParameter = Expression.Parameter(inContextType, $"context{i}");

@@ -2,6 +2,7 @@ namespace NServiceBus
 {
     using System;
     using System.Collections.Generic;
+    using System.Reflection;
     using Pipeline;
 
     static class BehaviorTypeChecker
@@ -9,11 +10,11 @@ namespace NServiceBus
         public static void ThrowIfInvalid(Type behavior, string paramName)
         {
             Guard.AgainstNull(nameof(behavior), behavior);
-            if (behavior.IsAbstract)
+            if (behavior.GetTypeInfo().IsAbstract)
             {
                 throw new ArgumentException($"The behavior '{behavior.Name}' is invalid since it is abstract.", paramName);
             }
-            if (behavior.IsGenericTypeDefinition)
+            if (behavior.GetTypeInfo().IsGenericTypeDefinition)
             {
                 throw new ArgumentException($"The behavior '{behavior.Name}' is invalid since it is an open generic.", paramName);
             }

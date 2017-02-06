@@ -3,12 +3,10 @@
     using System;
     using System.Linq;
     using System.Threading.Tasks;
-    using Janitor;
     using ObjectBuilder;
     using Pipeline;
     using Settings;
 
-    [SkipWeaving]
     class Pipeline<TContext> : IPipeline<TContext>
         where TContext : IBehaviorContext
     {

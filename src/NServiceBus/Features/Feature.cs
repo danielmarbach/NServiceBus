@@ -3,13 +3,12 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using JetBrains.Annotations;
+    using System.Reflection;
     using Settings;
 
     /// <summary>
     /// Used to control the various features supported by the framework.
     /// </summary>
-    [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     public abstract partial class Feature
     {
         /// <summary>
@@ -121,7 +120,7 @@
 
             foreach (var feature in features)
             {
-                if (!feature.IsSubclassOf(baseFeatureType))
+                if (!feature.GetTypeInfo().IsSubclassOf(baseFeatureType))
                 {
                     throw new ArgumentException($"A Feature can only depend on another Feature. '{feature.FullName}' is not a Feature", nameof(features));
                 }

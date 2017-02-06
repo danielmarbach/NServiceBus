@@ -2,31 +2,32 @@ namespace NServiceBus
 {
     using System;
     using System.Linq;
+    using System.Reflection;
     using Pipeline;
 
     static class RegisterStepExtensions
     {
         public static bool IsStageConnector(this RegisterStep step)
         {
-            return typeof(IStageConnector).IsAssignableFrom(step.BehaviorType);
+            return typeof(IStageConnector).GetTypeInfo().IsAssignableFrom(step.BehaviorType);
         }
 
         public static Type GetContextType(this Type behaviorType)
         {
             var behaviorInterface = behaviorType.GetBehaviorInterface();
-            return behaviorInterface.GetGenericArguments()[0];
+            return behaviorInterface.GetTypeInfo().GetGenericArguments()[0];
         }
 
         public static bool IsBehavior(this Type behaviorType)
         {
-            return behaviorType.GetInterfaces()
-                .Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == BehaviorInterfaceType);
+            return behaviorType.GetTypeInfo().GetInterfaces()
+                .Any(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == BehaviorInterfaceType);
         }
 
         public static Type GetBehaviorInterface(this Type behaviorType)
         {
-            return behaviorType.GetInterfaces()
-                .First(x => x.IsGenericType && x.GetGenericTypeDefinition() == BehaviorInterfaceType);
+            return behaviorType.GetTypeInfo().GetInterfaces()
+                .First(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == BehaviorInterfaceType);
         }
 
         public static Type GetOutputContext(this RegisterStep step)
@@ -37,7 +38,7 @@ namespace NServiceBus
         public static Type GetOutputContext(this Type behaviorType)
         {
             var behaviorInterface = GetBehaviorInterface(behaviorType);
-            return behaviorInterface.GetGenericArguments()[1];
+            return behaviorInterface.GetTypeInfo().GetGenericArguments()[1];
         }
 
         public static Type GetInputContext(this RegisterStep step)
@@ -48,7 +49,7 @@ namespace NServiceBus
         public static Type GetInputContext(this Type behaviorType)
         {
             var behaviorInterface = GetBehaviorInterface(behaviorType);
-            return behaviorInterface.GetGenericArguments()[0];
+            return behaviorInterface.GetTypeInfo().GetGenericArguments()[0];
         }
 
         static Type BehaviorInterfaceType = typeof(IBehavior<,>);

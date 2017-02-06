@@ -4,7 +4,7 @@ namespace NServiceBus
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
-    using System.Security.Principal;
+    using System.Reflection;
     using System.Threading.Tasks;
     using Config.ConfigurationSource;
     using Features;
@@ -63,7 +63,7 @@ namespace NServiceBus
 
         static bool IsConcrete(Type x)
         {
-            return !x.IsAbstract && !x.IsInterface;
+            return !x.GetTypeInfo().IsAbstract && !x.GetTypeInfo().IsInterface;
         }
 
         void ConfigRunBeforeIsFinalized(IEnumerable<Type> concreteTypes)
@@ -77,7 +77,7 @@ namespace NServiceBus
 
         static bool IsIWantToRunBeforeConfigurationIsFinalized(Type type)
         {
-            return typeof(IWantToRunBeforeConfigurationIsFinalized).IsAssignableFrom(type);
+            return typeof(IWantToRunBeforeConfigurationIsFinalized).GetTypeInfo().IsAssignableFrom(type);
         }
 
         FeatureActivator BuildFeatureActivator(IEnumerable<Type> concreteTypes)
@@ -92,7 +92,7 @@ namespace NServiceBus
 
         static bool IsFeature(Type type)
         {
-            return typeof(Feature).IsAssignableFrom(type);
+            return typeof(Feature).GetTypeInfo().IsAssignableFrom(type);
         }
 
         void RegisterCriticalErrorHandler()
@@ -131,23 +131,23 @@ namespace NServiceBus
 
         static bool ImplementsIProvideConfiguration(Type type)
         {
-            return type.GetInterfaces().Any(IsIProvideConfiguration);
+            return type.GetTypeInfo().GetInterfaces().Any(IsIProvideConfiguration);
         }
 
         static bool IsIProvideConfiguration(Type type)
         {
-            if (!type.IsGenericType)
+            if (!type.GetTypeInfo().IsGenericType)
             {
                 return false;
             }
 
-            var args = type.GetGenericArguments();
+            var args = type.GetTypeInfo().GetGenericArguments();
             if (args.Length != 1)
             {
                 return false;
             }
 
-            return typeof(IProvideConfiguration<>).MakeGenericType(args)
+            return typeof(IProvideConfiguration<>).MakeGenericType(args).GetTypeInfo()
                 .IsAssignableFrom(type);
         }
 
@@ -168,14 +168,14 @@ namespace NServiceBus
             }
         }
 
-        static bool IsINeedToInstallSomething(Type t) => typeof(INeedToInstallSomething).IsAssignableFrom(t);
+        static bool IsINeedToInstallSomething(Type t) => typeof(INeedToInstallSomething).GetTypeInfo().IsAssignableFrom(t);
 
         string GetInstallationUserName()
         {
             string username;
             return settings.TryGet("Installers.UserName", out username)
                 ? username
-                : WindowsIdentity.GetCurrent().Name;
+                : string.Empty;
         }
 
         IBuilder builder;

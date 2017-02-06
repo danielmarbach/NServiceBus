@@ -1,7 +1,6 @@
 ﻿namespace NServiceBus
 {
     using System;
-    using System.Configuration;
     using Transport;
 
     sealed class TransportConnectionString
@@ -13,12 +12,6 @@
         public TransportConnectionString(Func<string> func)
         {
             GetValue = func;
-        }
-
-
-        public TransportConnectionString(string name)
-        {
-            GetValue = () => ReadConnectionString(name);
         }
 
         public static TransportConnectionString Default => new TransportConnectionString();
@@ -33,14 +26,7 @@
             return connectionString;
         }
 
-        static string ReadConnectionString(string connectionStringName)
-        {
-            var connectionStringSettings = ConfigurationManager.ConnectionStrings[connectionStringName];
-
-            return connectionStringSettings?.ConnectionString;
-        }
-
-        Func<string> GetValue = () => ReadConnectionString(DefaultConnectionStringName);
+        Func<string> GetValue = () => null;
 
         const string Message =
             @"Transport connection string has not been explicitly configured via ConnectionString method and no default connection has been was found in the app.config or web.config file for the {0} Transport.

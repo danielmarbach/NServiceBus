@@ -119,7 +119,7 @@ namespace NServiceBus
 
         static void SetPropertyValue(object instance, string propertyName, object value)
         {
-            instance.GetType()
+            instance.GetType().GetTypeInfo()
                 .GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance)
                 .SetValue(instance, value, null);
         }
@@ -162,12 +162,12 @@ namespace NServiceBus
                 return new List<Type>();
             }
 
-            var result = new List<Type>(type.GetInterfaces())
+            var result = new List<Type>(type.GetTypeInfo().GetInterfaces())
             {
                 type
             };
 
-            foreach (var interfaceType in type.GetInterfaces())
+            foreach (var interfaceType in type.GetTypeInfo().GetInterfaces())
             {
                 result.AddRange(GetAllServices(interfaceType));
             }

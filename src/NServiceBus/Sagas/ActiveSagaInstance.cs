@@ -100,7 +100,7 @@ namespace NServiceBus.Sagas
             Instance.Entity = sagaEntity;
             SagaId = sagaEntity.Id.ToString();
 
-            var properties = sagaEntity.GetType().GetProperties();
+            var properties = sagaEntity.GetType().GetTypeInfo().GetProperties();
             SagaMetadata.CorrelationPropertyMetadata correlatedPropertyMetadata;
 
             if (Metadata.TryGetCorrelationProperty(out correlatedPropertyMetadata))
@@ -207,7 +207,7 @@ Changing the value of correlated properties at runtime is currently not supporte
 
         static object GetDefault(Type type)
         {
-            if (type.IsValueType)
+            if (type.GetTypeInfo().IsValueType)
             {
                 return Activator.CreateInstance(type);
             }

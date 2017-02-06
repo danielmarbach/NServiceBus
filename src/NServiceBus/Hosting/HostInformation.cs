@@ -19,8 +19,8 @@ namespace NServiceBus.Hosting
             : this(hostId, displayName, new Dictionary<string, string>
             {
                 {"Machine", RuntimeEnvironment.MachineName},
-                {"ProcessID", Process.GetCurrentProcess().Id.ToString()},
-                {"UserName", Environment.UserName}
+                {"ProcessID", ""},
+                {"UserName", string.Empty }
             })
         {
         }

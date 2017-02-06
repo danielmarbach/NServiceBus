@@ -2,7 +2,6 @@
 {
     using System.Threading.Tasks;
     using Extensibility;
-    using Janitor;
     using MessageMutator;
     using NServiceBus.Outbox;
     using Persistence;
@@ -74,7 +73,6 @@
 
         // Do not allow Fody to weave the IDisposable for us so that other threads can still access the instance of this class
         // even after it has been disposed.
-        [SkipWeaving]
         class NoOpCompletableSynchronizedStorageSession : CompletableSynchronizedStorageSession
         {
             public Task CompleteAsync()

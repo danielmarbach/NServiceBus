@@ -1,6 +1,8 @@
 ﻿namespace NServiceBus.Features
 {
     using System;
+    using System.Linq;
+    using System.Reflection;
     using DeliveryConstraints;
 
     class MessageDurabilityFeature : Feature
@@ -16,7 +18,7 @@
 
             if (!context.Settings.TryGet("messageDurabilityConvention", out durabilityConvention))
             {
-                durabilityConvention = t => t.GetCustomAttributes(typeof(ExpressAttribute), true).Length > 0;
+                durabilityConvention = t => t.GetTypeInfo().GetCustomAttributes(typeof(ExpressAttribute), true).Any();
             }
 
             doesSupportNonDurableDelivery = context.Settings.DoesTransportSupportConstraint<NonDurableDelivery>();

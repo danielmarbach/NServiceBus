@@ -29,10 +29,9 @@ namespace NServiceBus
             {
                 AppendLine(message);
             }
-            catch (Exception exception)
+            catch
             {
-                var errorMessage = $"NServiceBus.RollingLogger Could not write to log file '{currentfilePath}'. Exception: {exception}";
-                Trace.WriteLine(errorMessage);
+                // intentionally left blank
             }
         }
 

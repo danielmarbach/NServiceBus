@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Linq;
+    using System.Reflection;
     using System.Threading.Tasks;
     using Logging;
     using Pipeline;
@@ -291,7 +292,7 @@
             SagaLookupValues.LookupValue value;
             if (lookupValues.TryGet(sagaEntityType, out value))
             {
-                var propertyInfo = sagaEntityType.GetProperty(value.PropertyName);
+                var propertyInfo = sagaEntityType.GetTypeInfo().GetProperty(value.PropertyName);
 
                 var convertedValue = TypeDescriptor.GetConverter(propertyInfo.PropertyType)
                     .ConvertFromInvariantString(value.PropertyValue.ToString());

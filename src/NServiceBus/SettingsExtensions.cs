@@ -3,6 +3,7 @@ namespace NServiceBus
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using Config.ConfigurationSource;
     using Settings;
 
@@ -20,7 +21,7 @@ namespace NServiceBus
             var typesToScan = settings.GetAvailableTypes();
             var configurationSource = settings.Get<IConfigurationSource>();
 
-            var sectionOverrideTypes = typesToScan.Where(t => !t.IsAbstract && typeof(IProvideConfiguration<T>).IsAssignableFrom(t)).ToArray();
+            var sectionOverrideTypes = typesToScan.Where(t => !t.GetTypeInfo().IsAbstract && typeof(IProvideConfiguration<T>).GetTypeInfo().IsAssignableFrom(t)).ToArray();
             if (sectionOverrideTypes.Length > 1)
             {
                 throw new Exception($"Multiple configuration providers implementing IProvideConfiguration<{typeof(T).Name}> were found: {string.Join(", ", sectionOverrideTypes.Select(s => s.FullName))}. Ensure that only one configuration provider per configuration section is found to resolve this error.");
@@ -94,7 +95,7 @@ namespace NServiceBus
 
         static bool HasConstructorThatAcceptsSettings(Type sectionOverrideType)
         {
-            return sectionOverrideType.GetConstructor(new[]
+            return sectionOverrideType.GetTypeInfo().GetConstructor(new[]
             {
                 typeof(ReadOnlySettings)
             }) != null;

@@ -3,6 +3,7 @@ namespace NServiceBus
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using Logging;
     using Pipeline;
 
@@ -128,7 +129,7 @@ namespace NServiceBus
                 {
                     finalOrder.Add(stageConnector);
 
-                    if (typeof(IPipelineTerminator).IsAssignableFrom(stageConnector.BehaviorType))
+                    if (typeof(IPipelineTerminator).GetTypeInfo().IsAssignableFrom(stageConnector.BehaviorType))
                     {
                         currentStage = null;
                     }
@@ -147,7 +148,7 @@ namespace NServiceBus
 
         static bool IsStageConnector(RegisterStep stageStep)
         {
-            return typeof(IStageConnector).IsAssignableFrom(stageStep.BehaviorType);
+            return typeof(IStageConnector).GetTypeInfo().IsAssignableFrom(stageStep.BehaviorType);
         }
 
         static IEnumerable<RegisterStep> Sort(List<RegisterStep> registrations)

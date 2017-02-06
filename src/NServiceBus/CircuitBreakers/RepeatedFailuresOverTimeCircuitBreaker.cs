@@ -13,7 +13,7 @@ namespace NServiceBus
             this.triggerAction = triggerAction;
             this.timeToWaitBeforeTriggering = timeToWaitBeforeTriggering;
 
-            timer = new Timer(CircuitBreakerTriggered);
+            timer = new Timer(CircuitBreakerTriggered, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
         }
 
         public void Success()

@@ -11,7 +11,7 @@
 // ReSharper disable UnusedParameter.Global
         public static void TypeHasDefaultConstructor(Type type, [InvokerParameterName] string argumentName)
         {
-            if (type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            if (type.GetTypeInfo().GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                 .All(ctor => ctor.GetParameters().Length != 0))
             {
                 var error = $"Type '{type.FullName}' must have a default constructor.";

@@ -1,7 +1,7 @@
 ﻿namespace NServiceBus
 {
     using System;
-    using System.Diagnostics;
+    using System.Linq;
     using System.Reflection;
 
     /// <summary>
@@ -16,26 +16,16 @@
         /// <returns>SemVer compliant version.</returns>
         public static string GetFileVersion(Type type)
         {
-            if (!string.IsNullOrEmpty(type.Assembly.Location))
-            {
-                var fileVersion = FileVersionInfo.GetVersionInfo(type.Assembly.Location);
+            var customAttributes = type.GetTypeInfo().Assembly.GetCustomAttributes(typeof(AssemblyFileVersionAttribute));
 
-                return new Version(fileVersion.FileMajorPart, fileVersion.FileMinorPart, fileVersion.FileBuildPart).ToString(3);
+            var fileVersion = (AssemblyFileVersionAttribute)customAttributes.ElementAtOrDefault(0);
+            Version version;
+            if (Version.TryParse(fileVersion.Version, out version))
+            {
+                return version.ToString(3);
             }
 
-            var customAttributes = type.Assembly.GetCustomAttributes(typeof(AssemblyFileVersionAttribute), false);
-
-            if (customAttributes.Length >= 1)
-            {
-                var fileVersion = (AssemblyFileVersionAttribute) customAttributes[0];
-                Version version;
-                if (Version.TryParse(fileVersion.Version, out version))
-                {
-                    return version.ToString(3);
-                }
-            }
-
-            return type.Assembly.GetName().Version.ToString(3);
+            return type.GetTypeInfo().Assembly.GetName().Version.ToString(3);
         }
     }
 }

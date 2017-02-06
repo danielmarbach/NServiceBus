@@ -1,5 +1,7 @@
 namespace NServiceBus.Features
 {
+    using System.Reflection;
+
     /// <summary>
     /// NServiceBus scheduling capability you can schedule a task or an action/lambda, to be executed repeatedly in a given
     /// interval.
@@ -19,7 +21,7 @@ namespace NServiceBus.Features
         /// <param name="context">The feature context.</param>
         protected internal override void Setup(FeatureConfigurationContext context)
         {
-            context.Settings.Get<Conventions>().AddSystemMessagesConventions(t => typeof(ScheduledTask).IsAssignableFrom(t));
+            context.Settings.Get<Conventions>().AddSystemMessagesConventions(t => typeof(ScheduledTask).GetTypeInfo().IsAssignableFrom(t));
 
             var defaultScheduler = new DefaultScheduler();
             context.Container.RegisterSingleton(defaultScheduler);

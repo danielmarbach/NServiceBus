@@ -49,7 +49,7 @@
             {
                 using (var waitHandle = new ManualResetEvent(false))
                 {
-                    cleanupTimer.Dispose(waitHandle);
+                    cleanupTimer.Dispose();
 
                     // TODO: Use async synchronization primitive
                     waitHandle.WaitOne();

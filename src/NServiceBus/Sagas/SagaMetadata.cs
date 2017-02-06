@@ -5,7 +5,6 @@ namespace NServiceBus.Sagas
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
-    using System.Runtime.Serialization;
 
     /// <summary>
     /// Contains metadata for known sagas.
@@ -105,7 +104,7 @@ Sagas must have at least one message that is allowed to start the saga. Add at l
 
         internal static bool IsSagaType(Type t)
         {
-            return typeof(Saga).IsAssignableFrom(t) && t != typeof(Saga) && !t.IsGenericType && !t.IsAbstract;
+            return typeof(Saga).GetTypeInfo().IsAssignableFrom(t) && t != typeof(Saga) && !t.GetTypeInfo().IsGenericType && !t.GetTypeInfo().IsAbstract;
         }
 
         /// <summary>
@@ -157,13 +156,13 @@ Sagas must have at least one message that is allowed to start the saga. Add at l
                 throw new Exception(sagaType.FullName + " is not a saga");
             }
 
-            var genericArguments = GetBaseSagaType(sagaType).GetGenericArguments();
+            var genericArguments = GetBaseSagaType(sagaType).GetTypeInfo().GetGenericArguments();
             if (genericArguments.Length != 1)
             {
                 throw new Exception($"'{sagaType.Name}' saga type does not implement Saga<T>");
             }
 
-            var saga = (Saga) FormatterServices.GetUninitializedObject(sagaType);
+            var saga = (Saga) Activator.CreateInstance(sagaType);
             var mapper = new SagaMapper();
             saga.ConfigureHowToFindSaga(mapper);
 
@@ -197,7 +196,7 @@ Sagas must have at least one message that is allowed to start the saga. Add at l
 
             foreach (var mapping in mapper.Mappings)
             {
-                var associatedMessage = associatedMessages.FirstOrDefault(m => mapping.MessageType.IsAssignableFrom(m.MessageType));
+                var associatedMessage = associatedMessages.FirstOrDefault(m => mapping.MessageType.GetTypeInfo().IsAssignableFrom(m.MessageType));
                 if (associatedMessage == null)
                 {
                     var msgType = mapping.MessageType.Name;
@@ -214,7 +213,7 @@ Sagas must have at least one message that is allowed to start the saga. Add at l
             {
                 if (messageType.IsAllowedToStartSaga)
                 {
-                    var match = mapper.Mappings.FirstOrDefault(m => m.MessageType.IsAssignableFrom(messageType.MessageType));
+                    var match = mapper.Mappings.FirstOrDefault(m => m.MessageType.GetTypeInfo().IsAssignableFrom(messageType.MessageType));
                     if (match == null)
                     {
                         var simpleName = messageType.MessageType.Name;
@@ -228,14 +227,14 @@ Sagas must have at least one message that is allowed to start the saga. Add at l
 
         static void ApplyScannedFinders(SagaMapper mapper, Type sagaEntityType, IEnumerable<Type> availableTypes, Conventions conventions)
         {
-            var actualFinders = availableTypes.Where(t => typeof(IFinder).IsAssignableFrom(t) && t.IsClass)
+            var actualFinders = availableTypes.Where(t => typeof(IFinder).GetTypeInfo().IsAssignableFrom(t) && t.GetTypeInfo().IsClass)
                 .ToList();
 
             foreach (var finderType in actualFinders)
             {
-                foreach (var interfaceType in finderType.GetInterfaces())
+                foreach (var interfaceType in finderType.GetTypeInfo().GetInterfaces())
                 {
-                    var args = interfaceType.GetGenericArguments();
+                    var args = interfaceType.GetTypeInfo().GetGenericArguments();
                     //since we don't want to process the IFinder type
                     if (args.Length != 2)
                     {
@@ -313,9 +312,9 @@ Sagas must have at least one message that is allowed to start the saga. Add at l
 
         static IEnumerable<Type> GetMessagesCorrespondingToFilterOnSaga(Type sagaType, Type filter)
         {
-            foreach (var interfaceType in sagaType.GetInterfaces())
+            foreach (var interfaceType in sagaType.GetTypeInfo().GetInterfaces())
             {
-                foreach (var argument in interfaceType.GetGenericArguments())
+                foreach (var argument in interfaceType.GetTypeInfo().GetGenericArguments())
                 {
                     var genericType = filter.MakeGenericType(argument);
                     var isOfFilterType = genericType == interfaceType;
@@ -330,7 +329,7 @@ Sagas must have at least one message that is allowed to start the saga. Add at l
 
         static Type GetBaseSagaType(Type t)
         {
-            var currentType = t.BaseType;
+            var currentType = t.GetTypeInfo().BaseType;
             var previousType = t;
 
             while (currentType != null)
@@ -341,7 +340,7 @@ Sagas must have at least one message that is allowed to start the saga. Add at l
                 }
 
                 previousType = currentType;
-                currentType = currentType.BaseType;
+                currentType = currentType.GetTypeInfo().BaseType;
             }
 
             throw new InvalidOperationException();

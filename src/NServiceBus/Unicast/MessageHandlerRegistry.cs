@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Reflection;
     using System.Threading.Tasks;
     using Logging;
     using Pipeline;
@@ -39,7 +40,7 @@
                 // ReSharper disable once LoopCanBeConvertedToQuery
                 foreach (var handlerDelegate in handlersAndMessages.Value)
                 {
-                    if (handlerDelegate.MessageType.IsAssignableFrom(messageType))
+                    if (handlerDelegate.MessageType.GetTypeInfo().IsAssignableFrom(messageType))
                     {
                         messageHandlers.Add(new MessageHandler(handlerDelegate.MethodDelegate, handlerType)
                         {
@@ -71,7 +72,7 @@
         {
             Guard.AgainstNull(nameof(handlerType), handlerType);
 
-            if (handlerType.IsAbstract)
+            if (handlerType.GetTypeInfo().IsAbstract)
             {
                 return;
             }
@@ -128,12 +129,12 @@
         {
             var interfaceType = interfaceGenericType.MakeGenericType(messageType);
 
-            if (!interfaceType.IsAssignableFrom(targetType))
+            if (!interfaceType.GetTypeInfo().IsAssignableFrom(targetType))
             {
                 return null;
             }
 
-            var methodInfo = targetType.GetInterfaceMap(interfaceType).TargetMethods.FirstOrDefault();
+            var methodInfo = targetType.GetTypeInfo().GetRuntimeInterfaceMap(interfaceType).TargetMethods.FirstOrDefault();
             if (methodInfo == null)
             {
                 return null;
@@ -156,12 +157,12 @@
         // ReSharper disable once ReturnTypeCanBeEnumerable.Local
         static Type[] GetMessageTypesBeingHandledBy(Type type)
         {
-            return (from t in type.GetInterfaces()
-                    where t.IsGenericType
-                    let potentialMessageType = t.GetGenericArguments()[0]
+            return (from t in type.GetTypeInfo().GetInterfaces()
+                    where t.GetTypeInfo().IsGenericType
+                    let potentialMessageType = t.GetTypeInfo().GetGenericArguments()[0]
                     where
-                    typeof(IHandleMessages<>).MakeGenericType(potentialMessageType).IsAssignableFrom(t) ||
-                    typeof(IHandleTimeouts<>).MakeGenericType(potentialMessageType).IsAssignableFrom(t)
+                    typeof(IHandleMessages<>).MakeGenericType(potentialMessageType).GetTypeInfo().IsAssignableFrom(t) ||
+                    typeof(IHandleTimeouts<>).MakeGenericType(potentialMessageType).GetTypeInfo().IsAssignableFrom(t)
                     select potentialMessageType)
                 .Distinct()
                 .ToArray();
@@ -169,14 +170,14 @@
 
         void ValidateHandlerType(Type handlerType)
         {
-            var propertyTypes = handlerType.GetProperties().Select(p => p.PropertyType).ToList();
-            var ctorArguments = handlerType.GetConstructors()
+            var propertyTypes = handlerType.GetTypeInfo().GetProperties().Select(p => p.PropertyType).ToList();
+            var ctorArguments = handlerType.GetTypeInfo().GetConstructors()
                 .SelectMany(ctor => ctor.GetParameters().Select(p => p.ParameterType))
                 .ToList();
 
             var dependencies = propertyTypes.Concat(ctorArguments).ToList();
 
-            if (dependencies.Any(t => typeof(IMessageSession).IsAssignableFrom(t)))
+            if (dependencies.Any(t => typeof(IMessageSession).GetTypeInfo().IsAssignableFrom(t)))
             {
                 throw new Exception($"Interfaces IMessageSession or IEndpointInstance should not be resolved from the container to enable sending or publishing messages from within sagas or message handlers. Instead, use the context parameter on the {handlerType.Name}.Handle method to send or publish messages.");
             }

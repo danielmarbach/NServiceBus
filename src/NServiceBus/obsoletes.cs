@@ -36,8 +36,6 @@ namespace NServiceBus
     using System.Collections.Generic;
     using System.Reflection;
     using System.Text;
-    using DataBus;
-    using ObjectBuilder;
 
     public static partial class ConfigureCriticalErrorAction
     {
@@ -363,19 +361,6 @@ namespace NServiceBus
     {
     }
 
-    public static partial class ConfigureRijndaelEncryptionService
-    {
-        [ObsoleteEx(
-            ReplacementTypeOrMember = "RegisterEncryptionService(this EndpointConfiguration config, Func<IEncryptionService> func)",
-            RemoveInVersion = "7.0",
-            TreatAsErrorFromVersion = "6.0",
-            Message = "It is no longer possible to access the builder to create an encryption service. If container access is required use the container directly in the factory.")]
-        public static void RegisterEncryptionService(this EndpointConfiguration config, Func<IBuilder, IEncryptionService> func)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
     [ObsoleteEx(
         Message = "`IWantToRunWhenBusStartsAndStops` has been moved to the host implementations and renamed. If you're self-hosting, instead of using this interface, you can call any startup code right before `Endpoint.Create` or any cleanup code right after `Endpoint.Stop`. When using either NServiceBus.Host or NServiceBus.Host.AzureCloudService, use the host's interface `IWantToRunWhenEndpointStartsAndStops` instead.",
         RemoveInVersion = "7.0",
@@ -446,18 +431,6 @@ namespace NServiceBus
     {
     }
 
-    public static partial class ConfigureFileShareDataBus
-    {
-        [ObsoleteEx(
-        RemoveInVersion = "7.0",
-        TreatAsErrorFromVersion = "6.0",
-        ReplacementTypeOrMember = "BasePath(this DataBusExtensions<FileShareDataBus> config, string basePath)")]
-        public static DataBusExtentions<FileShareDataBus> BasePath(this DataBusExtentions<FileShareDataBus> config, string basePath)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
     public static partial class JsonSerializerConfigurationExtensions
     {
         [ObsoleteEx(
@@ -465,36 +438,6 @@ namespace NServiceBus
         TreatAsErrorFromVersion = "6.0",
         ReplacementTypeOrMember = "Encoding(this SerializationExtensions<JsonSerializer> config, Encoding encoding)")]
         public static void Encoding(this SerializationExtentions<JsonSerializer> config, Encoding encoding)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public static partial class XmlSerializationExtensions
-    {
-        [ObsoleteEx(
-        RemoveInVersion = "7.0",
-        TreatAsErrorFromVersion = "6.0",
-        ReplacementTypeOrMember = "DontWrapRawXml(this SerializationExtensions<XmlSerializer> config)")]
-        public static SerializationExtentions<XmlSerializer> DontWrapRawXml(this SerializationExtentions<XmlSerializer> config)
-        {
-            throw new NotImplementedException();
-        }
-
-        [ObsoleteEx(
-        RemoveInVersion = "7.0",
-        TreatAsErrorFromVersion = "6.0",
-        ReplacementTypeOrMember = "Namespace(this SerializationExtensions<XmlSerializer> config, string namespaceToUse)")]
-        public static SerializationExtentions<XmlSerializer> Namespace(this SerializationExtentions<XmlSerializer> config, string namespaceToUse)
-        {
-            throw new NotImplementedException();
-        }
-
-        [ObsoleteEx(
-        RemoveInVersion = "7.0",
-        TreatAsErrorFromVersion = "6.0",
-        ReplacementTypeOrMember = "SanitizeInput(this SerializationExtensions<XmlSerializer> config)")]
-        public static SerializationExtentions<XmlSerializer> SanitizeInput(this SerializationExtentions<XmlSerializer> config)
         {
             throw new NotImplementedException();
         }
@@ -1056,180 +999,12 @@ namespace NServiceBus.AutomaticSubscriptions.Config
 
 namespace NServiceBus.Config
 {
-    using System;
-    using System.Configuration;
-
     [ObsoleteEx(
         Message = "Use the feature concept instead via A class which inherits from `NServiceBus.Features.Feature` and use `configuration.EnableFeature<YourClass>()`",
         RemoveInVersion = "7",
         TreatAsErrorFromVersion = "6")]
     public interface IWantToRunWhenConfigurationIsComplete
     {
-    }
-
-    [ObsoleteEx(
-        Message = Error,
-        RemoveInVersion = "7",
-        TreatAsErrorFromVersion = "6")]
-    public class SecondLevelRetriesConfig : ConfigurationSection
-    {
-        const string Error = "Second Level Retries has been renamed to Delayed Retries. The app.config API has been removed, use the code API via endpointConfiguration.Recoverability().Delayed(settings => ...);.";
-
-        public SecondLevelRetriesConfig()
-        {
-            Properties.Add(new ConfigurationProperty("Enabled", typeof(bool), true));
-            Properties.Add(new ConfigurationProperty("TimeIncrease", typeof(TimeSpan), Recoverability.DefaultTimeIncrease, null, new TimeSpanValidator(TimeSpan.Zero, TimeSpan.MaxValue), ConfigurationPropertyOptions.None));
-            Properties.Add(new ConfigurationProperty("NumberOfRetries", typeof(int), Recoverability.DefaultNumberOfRetries, null, new IntegerValidator(0, int.MaxValue), ConfigurationPropertyOptions.None));
-        }
-
-        [ObsoleteEx(
-            Message = Error + " To disable use endpointConfiguration.Recoverability().Delayed(settings => settings.NumberOfRetries(0));",
-            RemoveInVersion = "7",
-            TreatAsErrorFromVersion = "6")]
-        public bool Enabled
-        {
-            get { return (bool) this["Enabled"]; }
-            set { this["Enabled"] = value; }
-        }
-
-        [ObsoleteEx(
-            Message = Error + " To change the TimeIncrease use endpointConfiguration.Recoverability().Delayed(settings => settings.TimeIncrease(TimeSpan.FromMinutes(5));",
-            RemoveInVersion = "7",
-            TreatAsErrorFromVersion = "6")]
-        public TimeSpan TimeIncrease
-        {
-            get { return (TimeSpan) this["TimeIncrease"]; }
-            set { this["TimeIncrease"] = value; }
-        }
-
-        [ObsoleteEx(
-            Message = Error + " To change the NumberOfRetries use endpointConfiguration.Recoverability().Delayed(settings => settings.NumberOfRetries(5);",
-            RemoveInVersion = "7",
-            TreatAsErrorFromVersion = "6")]
-        public int NumberOfRetries
-        {
-            get { return (int) this["NumberOfRetries"]; }
-            set { this["NumberOfRetries"] = value; }
-        }
-    }
-
-    [ObsoleteEx(
-        TreatAsErrorFromVersion = "6",
-        RemoveInVersion = "7",
-        ReplacementTypeOrMember = "EndpointConfiguration.EnlistWithLegacyMSMQDistributor")]
-    public class MasterNodeConfig : ConfigurationSection
-    {
-        [ObsoleteEx(
-            TreatAsErrorFromVersion = "6",
-            RemoveInVersion = "7",
-            ReplacementTypeOrMember = "EndpointConfiguration.EnlistWithLegacyMSMQDistributor")]
-        [ConfigurationProperty("Node", IsRequired = false)]
-        public string Node { get; set; }
-    }
-
-    [ObsoleteEx(
-        Message = Error,
-        RemoveInVersion = "7",
-        TreatAsErrorFromVersion = "6")]
-    public class TransportConfig : ConfigurationSection
-    {
-        const string Error = "The app.config API TransportConfig has been removed, use the code API.";
-
-        [ObsoleteEx(
-            TreatAsErrorFromVersion = "6",
-            RemoveInVersion = "7",
-            Message = Error + " To change the concurrency level use endpointConfiguration.LimitMessageProcessingConcurrencyTo(1);")]
-        [ConfigurationPropertyAttribute("MaximumConcurrencyLevel", DefaultValue = 0, IsRequired = false)]
-        public int MaximumConcurrencyLevel
-        {
-            get { return (int) this["MaximumConcurrencyLevel"]; }
-            set { this["MaximumConcurrencyLevel"] = value; }
-        }
-
-        [ObsoleteEx(
-            TreatAsErrorFromVersion = "6",
-            RemoveInVersion = "7",
-            Message = Error + " To change the NumberOfRetries use endpointConfiguration.Recoverability().Immediate(settings => settings.NumberOfRetries(5);")]
-        [ConfigurationPropertyAttribute("MaxRetries", DefaultValue = 5, IsRequired = false)]
-        public int MaxRetries
-        {
-            get { return (int) this["MaxRetries"]; }
-            set { this["MaxRetries"] = value; }
-        }
-
-        [ObsoleteEx(
-            TreatAsErrorFromVersion = "6",
-            RemoveInVersion = "7",
-            Message = "Message throughput throttling has been removed. Consult the documentation for further information.")]
-        [ConfigurationPropertyAttribute("MaximumMessageThroughputPerSecond", DefaultValue = -1, IsRequired = false)]
-        public int MaximumMessageThroughputPerSecond
-        {
-            get { return (int) this["MaximumMessageThroughputPerSecond"]; }
-            set { this["MaximumMessageThroughputPerSecond"] = value; }
-        }
-    }
-
-    public partial class UnicastBusConfig
-    {
-        [ConfigurationProperty("DistributorControlAddress", IsRequired = false)]
-        [ObsoleteEx(
-            TreatAsErrorFromVersion = "6",
-            RemoveInVersion = "7",
-            Message = "Switch to the code API by using 'EndpointConfiguration.EnlistWithLegacyMSMQDistributor' instead.")]
-        public string DistributorControlAddress
-        {
-            get
-            {
-                var result = this["DistributorControlAddress"] as string;
-                if (string.IsNullOrWhiteSpace(result))
-                {
-                    result = null;
-                }
-
-                return result;
-            }
-            set { this["DistributorControlAddress"] = value; }
-        }
-
-        [ConfigurationProperty("DistributorDataAddress", IsRequired = false)]
-        [ObsoleteEx(
-            TreatAsErrorFromVersion = "6",
-            RemoveInVersion = "7",
-            Message = "Switch to the code API by using 'EndpointConfiguration.EnlistWithLegacyMSMQDistributor' instead.")]
-        public string DistributorDataAddress
-        {
-            get
-            {
-                var result = this["DistributorDataAddress"] as string;
-                if (string.IsNullOrWhiteSpace(result))
-                {
-                    result = null;
-                }
-
-                return result;
-            }
-            set { this["DistributorDataAddress"] = value; }
-        }
-
-        [ConfigurationProperty("ForwardReceivedMessagesTo", IsRequired = false)]
-        [ObsoleteEx(
-            TreatAsErrorFromVersion = "6",
-            RemoveInVersion = "7",
-            Message = "Use 'EndpointConfiguration.ForwardReceivedMessagesTo' to configure the forwarding address.")]
-        public string ForwardReceivedMessagesTo
-        {
-            get
-            {
-                var result = this["ForwardReceivedMessagesTo"] as string;
-                if (string.IsNullOrWhiteSpace(result))
-                {
-                    result = null;
-                }
-
-                return result;
-            }
-            set { this["ForwardReceivedMessagesTo"] = value; }
-        }
     }
 }
 
@@ -1380,23 +1155,6 @@ namespace NServiceBus.Unicast.Queuing
     }
 }
 
-namespace NServiceBus.Transports
-{
-    using System;
-    using Unicast.Transport;
-
-    [ObsoleteEx(
-        ReplacementTypeOrMember = "NServiceBus.Transport.IPushMessages",
-        RemoveInVersion = "7.0",
-        TreatAsErrorFromVersion = "6.0")]
-    public interface IDequeueMessages
-    {
-        void Init(Address address, TransactionSettings transactionSettings, Func<TransportMessage, bool> tryProcessMessage, Action<TransportMessage, Exception> endProcessMessage);
-        void Start(int maximumConcurrencyLevel);
-        void Stop();
-    }
-}
-
 namespace NServiceBus.Transports.Msmq
 {
     [ObsoleteEx(
@@ -1411,52 +1169,6 @@ namespace NServiceBus.Transports.Msmq
 namespace NServiceBus.Unicast.Transport
 {
     using System;
-    using System.Transactions;
-
-    [ObsoleteEx(
-        Message = "Transaction settings is no longer available via this class. See obsoletes on individual members for further details",
-        RemoveInVersion = "7.0",
-        TreatAsErrorFromVersion = "6.0")]
-    public class TransactionSettings
-    {
-        [ObsoleteEx(
-            Message = "No longer used",
-            RemoveInVersion = "7.0",
-            TreatAsErrorFromVersion = "6.0")]
-        public TransactionSettings(bool isTransactional, TimeSpan transactionTimeout, IsolationLevel isolationLevel, bool suppressDistributedTransactions, bool doNotWrapHandlersExecutionInATransactionScope)
-        {
-        }
-
-        [ObsoleteEx(
-            Message = "Timeouts are now controlled explicitly for the transaction scope unit of work using config.UnitOfWork().WrapHandlersInATransactionScope(timeout: X)",
-            RemoveInVersion = "7.0",
-            TreatAsErrorFromVersion = "6.0")]
-        public TimeSpan TransactionTimeout { get; set; }
-
-        [ObsoleteEx(
-            Message = "Isolation level are now controlled explicitly for the transaction scope unit of work using config.UnitOfWork().WrapHandlersInATransactionScope(isolationlevel: X)",
-            RemoveInVersion = "7.0",
-            TreatAsErrorFromVersion = "6.0")]
-        public IsolationLevel IsolationLevel { get; set; }
-
-        [ObsoleteEx(
-            Message = "DoNotWrapHandlersExecutionInATransactionScope is no longer used here. Use settings.GetOrDefault<bool>('Transactions.DoNotWrapHandlersExecutionInATransactionScope') instead",
-            RemoveInVersion = "7.0",
-            TreatAsErrorFromVersion = "6.0")]
-        public bool DoNotWrapHandlersExecutionInATransactionScope { get; set; }
-
-        [ObsoleteEx(
-            Message = "SuppressDistributedTransactions is no longer used here. Use `context.Settings.GetRequiredTransactionModeForReceives() != Transactions.TransactionScope` instead.",
-            RemoveInVersion = "7.0",
-            TreatAsErrorFromVersion = "6.0")]
-        public bool SuppressDistributedTransactions { get; set; }
-
-        [ObsoleteEx(
-            Message = "IsTransactional is no longer used here. Use `context.Settings.GetRequiredTransactionModeForReceives() != Transactions.None` instead.",
-            RemoveInVersion = "7.0",
-            TreatAsErrorFromVersion = "6.0")]
-        public bool IsTransactional { get; set; }
-    }
 
     [ObsoleteEx(
         RemoveInVersion = "7.0",
@@ -1990,25 +1702,6 @@ namespace NServiceBus
     }
 }
 
-namespace NServiceBus.Hosting.Helpers
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Reflection;
-
-    public partial class AssemblyScanner
-    {
-        [ObsoleteEx(
-            Message = "This method is no longer required since deep scanning of assemblies is done to detect an NServiceBus reference.",
-            RemoveInVersion = "7.0",
-            TreatAsErrorFromVersion = "6.0")]
-        public List<Assembly> MustReferenceAtLeastOneAssembly
-        {
-            get { throw new NotImplementedException(); }
-        }
-    }
-}
-
 namespace NServiceBus.Outbox
 {
     using System;
@@ -2241,7 +1934,6 @@ namespace NServiceBus
 namespace NServiceBus.Settings
 {
     using System;
-    using System.Transactions;
 
     public class TransactionSettings
     {
@@ -2291,15 +1983,6 @@ Suppressing the ambient transaction created by the MSMQ and SQL Server transport
             TreatAsErrorFromVersion = "6.0",
             ReplacementTypeOrMember = "config.UseTransport<MyTransport>().Transactions(TransportTransactionMode.TransactionScope);")]
         public TransactionSettings EnableDistributedTransactions()
-        {
-            throw new NotImplementedException();
-        }
-
-        [ObsoleteEx(
-            RemoveInVersion = "7.0",
-            TreatAsErrorFromVersion = "6.0",
-            ReplacementTypeOrMember = "config.UnitOfWork().WrapHandlersInATransactionScope(isolationLevel: IsolationLevel.X);")]
-        public TransactionSettings IsolationLevel(IsolationLevel isolationLevel)
         {
             throw new NotImplementedException();
         }

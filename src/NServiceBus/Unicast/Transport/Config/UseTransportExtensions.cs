@@ -47,7 +47,7 @@ namespace NServiceBus
         {
             if (!endpointConfiguration.Settings.HasExplicitValue<TransportDefinition>())
             {
-                endpointConfiguration.UseTransport<MsmqTransport>();
+                throw new InvalidOperationException("You have to select a transport");
             }
         }
     }

@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Reflection;
 
     class TimeToBeReceivedMappings
     {
@@ -51,7 +52,7 @@
         public static Func<Type, TimeSpan> DefaultConvention = t =>
         {
             var timeToBeReceived = TimeSpan.MaxValue;
-            foreach (var customAttribute in t.GetCustomAttributes(typeof(TimeToBeReceivedAttribute), true))
+            foreach (var customAttribute in t.GetTypeInfo().GetCustomAttributes(typeof(TimeToBeReceivedAttribute), true))
             {
                 var attribute = customAttribute as TimeToBeReceivedAttribute;
                 if (attribute != null)

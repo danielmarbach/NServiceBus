@@ -1,7 +1,6 @@
 namespace NServiceBus.Config
 {
     using System;
-    using System.Configuration;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -9,59 +8,33 @@ namespace NServiceBus.Config
     /// <summary>
     /// A configuration element representing which message types map to which endpoint.
     /// </summary>
-    public class MessageEndpointMapping : ConfigurationElement, IComparable<MessageEndpointMapping>
+    public class MessageEndpointMapping : IComparable<MessageEndpointMapping>
     {
         /// <summary>
         /// A string defining the message assembly, or single message type.
         /// </summary>
-        [ConfigurationProperty("Messages", IsRequired = false)]
-        public string Messages
-        {
-            get { return (string) this["Messages"]; }
-            set { this["Messages"] = value; }
-        }
+        public string Messages { get; set; }
 
         /// <summary>
         /// The endpoint named according to "queue@machine".
         /// </summary>
-        [ConfigurationProperty("Endpoint", IsRequired = true)]
-        public string Endpoint
-        {
-            get { return (string) this["Endpoint"]; }
-            set { this["Endpoint"] = value; }
-        }
-
+        public string Endpoint { get; set; }
         /// <summary>
         /// The message assembly for the endpoint mapping.
         /// </summary>
-        [ConfigurationProperty("Assembly", IsRequired = false)]
-        public string AssemblyName
-        {
-            get { return (string) this["Assembly"]; }
-            set { this["Assembly"] = value; }
-        }
+        public string AssemblyName { get; set; }
 
         /// <summary>
         /// The fully qualified name of the message type. Define this if you want to map a single message type to the endpoint.
         /// </summary>
         /// <remarks>Type will take preference above namespace.</remarks>
-        [ConfigurationProperty("Type", IsRequired = false)]
-        public string TypeFullName
-        {
-            get { return (string) this["Type"]; }
-            set { this["Type"] = value; }
-        }
+        public string TypeFullName { get; set; }
 
         /// <summary>
         /// The message namespace. Define this if you want to map all the types in the namespace to the endpoint.
         /// </summary>
         /// <remarks>Sub-namespaces will not be mapped.</remarks>
-        [ConfigurationProperty("Namespace", IsRequired = false)]
-        public string Namespace
-        {
-            get { return (string) this["Namespace"]; }
-            set { this["Namespace"] = value; }
-        }
+        public string Namespace { get; set; }
 
         /// <summary>
         /// Comparison support.
@@ -160,11 +133,11 @@ namespace NServiceBus.Config
                 }
             }
 
-            var messageTypes = a.GetTypes().AsQueryable();
+            var messageTypes = a.GetTypes();
 
             if (!string.IsNullOrEmpty(ns))
             {
-                messageTypes = messageTypes.Where(t => !string.IsNullOrWhiteSpace(t.Namespace) && t.Namespace.Equals(ns, StringComparison.InvariantCultureIgnoreCase));
+                messageTypes = messageTypes.Where(t => !string.IsNullOrWhiteSpace(t.Namespace) && t.Namespace.Equals(ns, StringComparison.OrdinalIgnoreCase)).ToArray();
             }
 
             foreach (var t in messageTypes)
@@ -208,7 +181,7 @@ namespace NServiceBus.Config
         {
             try
             {
-                return Assembly.Load(assemblyName);
+                return Assembly.Load(new AssemblyName(assemblyName));
             }
             catch (Exception ex)
             {

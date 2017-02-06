@@ -7,7 +7,6 @@ namespace NServiceBus
     using Config.ConfigurationSource;
     using Configuration.AdvanceExtensibility;
     using Container;
-    using Hosting.Helpers;
     using ObjectBuilder;
     using ObjectBuilder.Common;
     using Pipeline;
@@ -31,8 +30,6 @@ namespace NServiceBus
 
             Settings.Set("NServiceBus.Routing.EndpointName", endpointName);
 
-            Settings.SetDefault<IConfigurationSource>(new DefaultConfigurationSource());
-
             pipelineCollection = new PipelineConfiguration();
             Settings.Set<PipelineConfiguration>(pipelineCollection);
             Settings.Set<SatelliteDefinitions>(new SatelliteDefinitions());
@@ -42,8 +39,6 @@ namespace NServiceBus
             Settings.Set<QueueBindings>(new QueueBindings());
 
             Settings.SetDefault("Endpoint.SendOnly", false);
-            Settings.SetDefault("Transactions.IsolationLevel", IsolationLevel.ReadCommitted);
-            Settings.SetDefault("Transactions.DefaultTimeout", TransactionManager.DefaultTimeout);
 
             Notifications = new Notifications();
             Settings.Set<Notifications>(Notifications);
@@ -83,28 +78,6 @@ namespace NServiceBus
                 throw new ArgumentException("Passed in a null or empty assembly name.", nameof(assemblies));
             }
             excludedAssemblies = excludedAssemblies.Union(assemblies, StringComparer.OrdinalIgnoreCase).ToList();
-        }
-
-        /// <summary>
-        /// Append a list of <see cref="Type" />s to the ignored list.
-        /// </summary>
-        public void ExcludeTypes(params Type[] types)
-        {
-            Guard.AgainstNull(nameof(types), types);
-            if (types.Any(x => x == null))
-            {
-                throw new ArgumentException("Passed in a null or empty type.", nameof(types));
-            }
-
-            excludedTypes = excludedTypes.Union(types).ToList();
-        }
-
-        /// <summary>
-        /// Specify to scan nested directories when performing assembly scanning.
-        /// </summary>
-        public void ScanAssembliesInNestedDirectories()
-        {
-            scanAssembliesInNestedDirectories = true;
         }
 
         /// <summary>
@@ -168,7 +141,7 @@ namespace NServiceBus
         /// <summary>
         /// Specifies the range of types that NServiceBus scans for handlers etc.
         /// </summary>
-        internal void TypesToScanInternal(IEnumerable<Type> typesToScan)
+        public void TypesToScanInternal(IEnumerable<Type> typesToScan)
         {
             scannedTypes = typesToScan.ToList();
         }
@@ -178,21 +151,6 @@ namespace NServiceBus
         /// </summary>
         internal InitializableEndpoint Build()
         {
-            if (scannedTypes == null)
-            {
-                var directoryToScan = AppDomain.CurrentDomain.BaseDirectory;
-                if (HttpRuntime.AppDomainAppId != null)
-                {
-                    directoryToScan = HttpRuntime.BinDirectory;
-                }
-
-                scannedTypes = GetAllowedTypes(directoryToScan);
-            }
-            else
-            {
-                scannedTypes = scannedTypes.Union(GetAllowedCoreTypes()).ToList();
-            }
-
             Settings.SetDefault("TypesToScan", scannedTypes);
             ActivateAndInvoke<INeedInitialization>(scannedTypes, t => t.Customize(this));
 
@@ -225,7 +183,7 @@ namespace NServiceBus
         static void ForAllTypes<T>(IEnumerable<Type> types, Action<Type> action) where T : class
         {
             // ReSharper disable HeapView.SlowDelegateCreation
-            foreach (var type in types.Where(t => typeof(T).IsAssignableFrom(t) && !(t.IsAbstract || t.IsInterface)))
+            foreach (var type in types.Where(t => typeof(T).GetTypeInfo().IsAssignableFrom(t) && !(t.GetTypeInfo().IsAbstract || t.GetTypeInfo().IsInterface)))
             {
                 action(type);
             }
@@ -246,40 +204,13 @@ namespace NServiceBus
             });
         }
 
-        static bool HasDefaultConstructor(Type type) => type.GetConstructor(Type.EmptyTypes) != null;
-
-        List<Type> GetAllowedTypes(string path)
-        {
-            var assemblyScanner = new AssemblyScanner(path)
-            {
-                AssembliesToSkip = excludedAssemblies,
-                TypesToSkip = excludedTypes,
-                ScanNestedDirectories = scanAssembliesInNestedDirectories
-            };
-            return assemblyScanner
-                .GetScannableAssemblies()
-                .Types;
-        }
-
-        List<Type> GetAllowedCoreTypes()
-        {
-            var assemblyScanner = new AssemblyScanner(Assembly.GetExecutingAssembly())
-            {
-                TypesToSkip = excludedTypes,
-                ScanNestedDirectories = scanAssembliesInNestedDirectories
-            };
-            return assemblyScanner
-                .GetScannableAssemblies()
-                .Types;
-        }
+        static bool HasDefaultConstructor(Type type) => type.GetTypeInfo().GetConstructor(Type.EmptyTypes) != null;
 
         ConventionsBuilder conventionsBuilder;
         IContainer customBuilder;
         List<string> excludedAssemblies = new List<string>();
-        List<Type> excludedTypes = new List<Type>();
         PipelineConfiguration pipelineCollection;
         List<Action<IConfigureComponents>> registrations = new List<Action<IConfigureComponents>>();
-        bool scanAssembliesInNestedDirectories;
         List<Type> scannedTypes;
     }
 }

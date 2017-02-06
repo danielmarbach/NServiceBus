@@ -1,6 +1,5 @@
 ﻿namespace NServiceBus.Features
 {
-    using Config;
     using DelayedDelivery;
     using DeliveryConstraints;
 
@@ -12,7 +11,7 @@
             DependsOnOptionally<TimeoutManager>();
             Defaults(s =>
             {
-                var timeoutManagerAddressConfiguration = new TimeoutManagerAddressConfiguration(s.GetConfigSection<UnicastBusConfig>()?.TimeoutManagerAddress);
+                var timeoutManagerAddressConfiguration = new TimeoutManagerAddressConfiguration(null);
                 s.Set<TimeoutManagerAddressConfiguration>(timeoutManagerAddressConfiguration);
             });
         }

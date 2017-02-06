@@ -4,6 +4,7 @@
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using Logging;
 
     /// <summary>
@@ -132,17 +133,17 @@
 
         static int PlaceInMessageHierarchy(Type type)
         {
-            if (type.IsInterface)
+            if (type.GetTypeInfo().IsInterface)
             {
-                return type.GetInterfaces().Length;
+                return type.GetTypeInfo().GetInterfaces().Length;
             }
             var result = 0;
 
-            while (type.BaseType != null)
+            while (type.GetTypeInfo().BaseType != null)
             {
                 result++;
 
-                type = type.BaseType;
+                type = type.GetTypeInfo().BaseType;
             }
 
             return result;
@@ -150,18 +151,18 @@
 
         static IEnumerable<Type> GetParentTypes(Type type)
         {
-            foreach (var i in type.GetInterfaces())
+            foreach (var i in type.GetTypeInfo().GetInterfaces())
             {
                 yield return i;
             }
 
             // return all inherited types
-            var currentBaseType = type.BaseType;
+            var currentBaseType = type.GetTypeInfo().BaseType;
             var objectType = typeof(object);
             while (currentBaseType != null && currentBaseType != objectType)
             {
                 yield return currentBaseType;
-                currentBaseType = currentBaseType.BaseType;
+                currentBaseType = currentBaseType.GetTypeInfo().BaseType;
             }
         }
 

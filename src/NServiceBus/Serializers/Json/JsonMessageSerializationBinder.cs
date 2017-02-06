@@ -3,8 +3,8 @@ namespace NServiceBus
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Runtime.Serialization;
     using MessageInterfaces;
+    using Newtonsoft.Json;
 
     class JsonMessageSerializationBinder : SerializationBinder
     {
@@ -32,12 +32,6 @@ namespace NServiceBus
             if (resolved == null) // if the type has been used before it should be resolvable like this
             {
                 resolved = Type.GetType(typeName);
-            }
-            if (resolved == null) // if the type has not been used before, we need to find it brute force
-            {
-                resolved = AppDomain.CurrentDomain.GetAssemblies()
-                    .Select(a => a.GetType(typeName))
-                    .FirstOrDefault(t => t != null);
             }
             return resolved;
         }

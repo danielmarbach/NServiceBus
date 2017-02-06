@@ -2,6 +2,7 @@ namespace NServiceBus.Unicast.Subscriptions
 {
     using System;
     using System.Linq;
+    using System.Reflection;
 
     /// <summary>
     /// Representation of a message type that clients can be subscribed to.
@@ -14,7 +15,7 @@ namespace NServiceBus.Unicast.Subscriptions
         public MessageType(Type type)
         {
             Guard.AgainstNull(nameof(type), type);
-            Version = type.Assembly.GetName().Version;
+            Version = type.GetTypeInfo().Assembly.GetName().Version;
             TypeName = type.FullName;
         }
 

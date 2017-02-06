@@ -2,7 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
+    using System.Reflection;
     using Hosting;
     using Support;
 
@@ -13,7 +13,7 @@
             EnableByDefault();
             Defaults(s =>
             {
-                var fullPathToStartingExe = PathUtilities.SanitizedPath(Environment.CommandLine);
+                var fullPathToStartingExe = PathUtilities.SanitizedPath(Assembly.GetEntryAssembly().Location);
 
                 if (!s.HasExplicitValue(HostIdSettingsKey))
                 {
@@ -23,8 +23,8 @@
                 s.SetDefault("NServiceBus.HostInformation.Properties", new Dictionary<string, string>
                 {
                     {"Machine", RuntimeEnvironment.MachineName},
-                    {"ProcessID", Process.GetCurrentProcess().Id.ToString()},
-                    {"UserName", Environment.UserName},
+                    {"ProcessID", "Unknown" },
+                    {"UserName", "Unknown" },
                     {"PathToExecutable", fullPathToStartingExe}
                 });
             });

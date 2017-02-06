@@ -41,7 +41,7 @@ namespace NServiceBus
             Tuple<SerializationDefinition, SettingsHolder> defaultSerializerAndSettings;
             if (!settings.TryGet(MainSerializerSettingsKey, out defaultSerializerAndSettings))
             {
-                defaultSerializerAndSettings = Tuple.Create<SerializationDefinition, SettingsHolder>(new XmlSerializer(), new SettingsHolder());
+                defaultSerializerAndSettings = Tuple.Create<SerializationDefinition, SettingsHolder>(new JsonSerializer(), new SettingsHolder());
             }
             return defaultSerializerAndSettings;
         }

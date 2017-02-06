@@ -3,6 +3,7 @@ namespace NServiceBus.DeliveryConstraints
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using Extensibility;
     using Settings;
     using Transport;
@@ -109,7 +110,7 @@ namespace NServiceBus.DeliveryConstraints
         internal static bool DoesTransportSupportConstraint<T>(this ReadOnlySettings settings) where T : DeliveryConstraint
         {
             return settings.Get<TransportInfrastructure>()
-                .DeliveryConstraints.Any(t => typeof(T).IsAssignableFrom(t));
+                .DeliveryConstraints.Any(t => typeof(T).GetTypeInfo().IsAssignableFrom(t));
         }
     }
 }

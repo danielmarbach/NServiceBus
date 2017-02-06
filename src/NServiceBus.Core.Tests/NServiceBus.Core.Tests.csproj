@@ -347,10 +347,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NServiceBus.Core\NServiceBus.Core.csproj">
-      <Project>{dd48b2d0-e996-412d-9157-821ed8b17a9d}</Project>
-      <Name>NServiceBus.Core</Name>
-    </ProjectReference>
     <ProjectReference Include="..\NServiceBus.Testing.Fakes\NServiceBus.Testing.Fakes.csproj">
       <Project>{80105366-8ef9-494d-a296-e100e82224cf}</Project>
       <Name>NServiceBus.Testing.Fakes</Name>

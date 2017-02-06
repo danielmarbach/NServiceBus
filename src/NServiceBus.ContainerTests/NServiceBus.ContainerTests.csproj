@@ -59,12 +59,6 @@
     <Compile Include="When_registering_components.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NServiceBus.Core\NServiceBus.Core.csproj">
-      <Project>{DD48B2D0-E996-412D-9157-821ED8B17A9D}</Project>
-      <Name>NServiceBus.Core</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
